@@ -2,168 +2,153 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apple Demo Loop Mockup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Apple Store Demo Loop</title>
   <style>
-    :root {
-      --bg-color: #f2f2f7;
-      --card-bg: rgba(255, 255, 255, 0.8);
-      --accent: #007aff;
-      --text: #1c1c1e;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+    }
+
+    /* Фоновый холст для плавной генерации градиентов */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      filter: blur(40px); /* Фирменный мягкий размытый эффект Apple */
+      transform: scale(1.2); /* Избавляемся от белых краев из-за blur */
+    }
+
+    /* Оверлей с текстом и графикой */
+    .overlay {
+      position: relative;
+      z-index: 2;
+      color: #ffffff;
+      text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      justify-content: space-between;
+      height: 80vh;
+      width: 90%;
+      pointer-events: none;
     }
 
-    .device-selector {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      background: #e5e5ea;
-      padding: 4px;
-      border-radius: 12px;
-    }
-
-    .device-btn {
-      border: none;
-      background: transparent;
-      padding: 8px 16px;
-      border-radius: 8px;
+    .header-logo {
+      font-size: 3rem;
       font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      letter-spacing: -0.02em;
+      opacity: 0.9;
     }
 
-    .device-btn.active {
-      background: #ffffff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .demo-card {
-      width: 100%;
-      max-width: 360px;
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      text-align: center;
-      box-sizing: border-box;
-    }
-
-    .mascot {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 16px;
-      background: #e1f0ff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-    }
-
-    h1 {
-      font-size: 22px;
-      margin: 0 0 6px;
+    .main-title {
+      font-size: 3.5rem;
       font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulseText 4s ease-in-out infinite alternate;
     }
 
-    p.subtitle {
-      color: #8e8e93;
-      font-size: 14px;
-      margin: 0 0 20px;
+    .footer-text {
+      font-size: 1.2rem;
+      font-weight: 400;
+      opacity: 0.6;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .action-btn {
-      border: 1px solid rgba(0,0,0,0.1);
-      background: #ffffff;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-
-    .log-window {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 12px;
-      font-family: monospace;
-      font-size: 11px;
-      text-align: left;
-      color: #3a3a3c;
-      height: 90px;
-      overflow-y: auto;
-      border: 1px solid rgba(0,0,0,0.05);
+    @keyframes pulseText {
+      0% {
+        transform: scale(0.98);
+        opacity: 0.85;
+      }
+      100% {
+        transform: scale(1.02);
+        opacity: 1;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="device-selector">
-    <button class="device-btn active" onclick="setDevice('iPhone', '📱')">iPhone</button>
-    <button class="device-btn" onclick="setDevice('iPad', '📱')">iPad</button>
-    <button class="device-btn" onclick="setDevice('MacBook', '💻')">MacBook</button>
-  </div>
+  <!-- Холст для жидких переливающихся шаров -->
+  <canvas id="demoCanvas"></canvas>
 
-  <div class="demo-card">
-    <div class="mascot" id="deviceIcon">📱</div>
-    <h1 id="titleText">iPhone Demo Loop</h1>
-    <p class="subtitle" id="subtitleText">Интерактивный режим демонстрации Apple</p>
-
-    <div class="controls-grid">
-      <button class="action-btn" onclick="addLog('Старт демонстрации...')">▶️ Старт</button>
-      <button class="action-btn" onclick="addLog('Демонстрация остановлена')">⏹ Стоп</button>
-      <button class="action-btn" onclick="addLog('Пауза')">⏸ Пауза</button>
-      <button class="action-btn" onclick="addLog('Открыты настройки')">⚙️ Настройки</button>
-    </div>
-
-    <div class="log-window" id="logBox">
-      <div>[System] Инициализация демо-режима...</div>
-    </div>
+  <!-- Поверхностная эстетика в стиле Apple -->
+  <div class="overlay">
+    <div class="header-logo"></div>
+    <div class="main-title">iPhone</div>
+    <div class="footer-text">Нажмите, чтобы начать</div>
   </div>
 
   <script>
-    function setDevice(name, icon) {
-      document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      document.getElementById('deviceIcon').innerText = icon;
-      document.getElementById('titleText').innerText = name + ' Demo Loop';
-      document.getElementById('subtitleText').innerText = 'Режим демонстрации для ' + name;
-      
-      addLog('Переключено на ' + name);
+    const canvas = document.getElementById('demoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
 
-    function addLog(message) {
-      const logBox = document.getElementById('logBox');
-      const time = new Date().toLocaleTimeString();
-      logBox.innerHTML += `<div>[${time}] ${message}</div>`;
-      logBox.scrollTop = logBox.scrollHeight;
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Создаем несколько светящихся сферы для симуляции жидкого градиента (Liquid Mesh Gradient)
+    const blobs = [
+      { x: 0, y: 0, r: 0, color: 'rgba(255, 45, 85, ', vx: 0.002, vy: 0.003, angle: 0 },   // Neon Pink
+      { x: 0, y: 0, r: 0, color: 'rgba(88, 86, 214, ', vx: 0.003, vy: 0.002, angle: 2 },   // Purple
+      { x: 0, y: 0, r: 0, color: 'rgba(0, 122, 255, ', vx: 0.001, vy: 0.004, angle: 4 },   // Apple Blue
+      { x: 0, y: 0, r: 0, color: 'rgba(255, 149, 0, ', vx: 0.004, vy: 0.001, angle: 1 }    // Orange
+    ];
+
+    function animate() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+
+      const baseRadius = Math.max(width, height) * 0.45;
+
+      blobs.forEach((blob, index) => {
+        // Синусоидальное движение по экрану
+        blob.angle += 0.008;
+        const x = width / 2 + Math.sin(blob.angle * blob.vx * 100) * (width * 0.35);
+        const y = height / 2 + Math.cos(blob.angle * blob.vy * 100) * (height * 0.35);
+
+        // Градиент свечения для каждой сферы
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, baseRadius);
+        gradient.addColorStop(0, blob.color + '0.85)');
+        gradient.addColorStop(0.5, blob.color + '0.3)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
     }
+
+    animate();
   </script>
-
 </body>
 </html>
+ 
